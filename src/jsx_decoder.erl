@@ -231,6 +231,7 @@ value(<<?solidus>>, Handler, Stack, Config) ->
 value(<<>>, Handler, Stack, Config) ->
     incomplete(value, <<>>, Handler, Stack, Config);
 value(Bin, Handler, Stack, Config) ->
+    io:format("value:~p~n",[Bin]),
     ?error(value, Bin, Handler, Stack, Config).
 
 
