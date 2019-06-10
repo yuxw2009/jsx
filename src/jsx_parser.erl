@@ -123,7 +123,7 @@ value([{_,_,_}=Timestamp|Tokens], Handler, Stack, Config) ->
 value([{{Year, Month, Day}, {Hour, Min, Sec}}|Tokens], Handler, Stack, Config)
 when is_integer(Year), is_integer(Month), is_integer(Day), is_integer(Hour), is_integer(Min), is_integer(Sec) ->
     value([{string, unicode:characters_to_binary(io_lib:format(
-            "~4.10.0B-~2.10.0B-~2.10.0BT~2.10.0B:~2.10.0B:~2.10.0BZ",
+            "~4.10.0B-~2.10.0B-~2.10.0B ~2.10.0B:~2.10.0B:~2.10.0B",
             [Year, Month, Day, Hour, Min, Sec]
         ))}|Tokens],
         Handler,
@@ -133,7 +133,7 @@ when is_integer(Year), is_integer(Month), is_integer(Day), is_integer(Hour), is_
 value([{{Year, Month, Day}, {Hour, Min, Sec}}|Tokens], Handler, Stack, Config)
 when is_integer(Year), is_integer(Month), is_integer(Day), is_integer(Hour), is_integer(Min), is_float(Sec) ->
     value([{string, unicode:characters_to_binary(io_lib:format(
-            "~4.10.0B-~2.10.0B-~2.10.0BT~2.10.0B:~2.10.0B:~9.6.0fZ",
+            "~4.10.0B-~2.10.0B-~2.10.0B ~2.10.0B:~2.10.0B:~9.6.0f",
             [Year, Month, Day, Hour, Min, Sec]
         ))}|Tokens],
         Handler,

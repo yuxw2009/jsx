@@ -23,7 +23,9 @@
 
 -module(jsx_encoder).
 
--export([encoder/3, encode/1, encode/2]).
+-export([encoder/3, encode/1, encode/2, encode_/2]).
+
+-compile(export_all).
 
 -spec encoder(Handler::module(), State::any(), Config::list()) -> jsx:encoder().
 
@@ -36,16 +38,20 @@ encoder(Handler, State, Config) ->
 
 encode(Term) -> encode(Term, ?MODULE).
 
-
+a()-> b.
 -spec encode(Term::any(), EntryPoint::module()) -> any().
 
 -ifndef(maps_support).
-encode(Term, EntryPoint) -> encode_(Term, EntryPoint).
+encode(Term, EntryPoint) when is_map(Term)->  encode(maps:to_list(Term), EntryPoint);
+encode(Term, EntryPoint) -> 
+    % io:format("encode:~p~n",[Term]),
+    encode_(Term, EntryPoint).
 -endif.
 
 -ifdef(maps_support).
 encode(Map, _EntryPoint) when is_map(Map), map_size(Map) < 1 ->
     [start_object, end_object];
+encode(Term, EntryPoint) when is_map(Term)->  encode(maps:to_list(Term), EntryPoint);
 encode(Term, EntryPoint) when is_map(Term) ->
     [start_object] ++ unpack(Term, EntryPoint);
 encode(Term, EntryPoint) -> encode_(Term, EntryPoint).
@@ -57,6 +63,9 @@ encode_([{}], _EntryPoint) -> [start_object, end_object];
 %% datetime special case
 encode_([{{_,_,_},{_,_,_}} = DateTime|Rest], EntryPoint) ->
     [start_array] ++ [DateTime] ++ unhitch(Rest, EntryPoint);
+%% jso special case    
+encode_({obj,Term}, EntryPoint) -> encode_(Term, EntryPoint);
+encode_([{obj, Term}|Other], EntryPoint) ->  encode_([Term|Other], EntryPoint);
 encode_([{_, _}|_] = Term, EntryPoint) ->
     [start_object] ++ unzip(Term, EntryPoint);
 encode_(Term, EntryPoint) when is_list(Term) ->
@@ -73,6 +82,7 @@ encode_(Else, _EntryPoint) -> [Else].
 % unzip(_, _) -> erlang:error(badarg).
 
 unzip([{K, V}|Rest], EntryPoint)->unzip([{K, V}|Rest], EntryPoint,[]).
+unzip([{K, V}|Rest], EntryPoint,Result) when is_list(K)-> unzip([{list_to_binary(K), V}|Rest], EntryPoint,Result);
 unzip(Term=[{K, V}|Rest], EntryPoint,Result) when is_integer(K); is_binary(K); is_atom(K) ->
     % io:format("unzip:~p ~p ~n",[Term,Result]),
     unzip(Rest, EntryPoint,[[K] ++ EntryPoint:encode(V, EntryPoint)|Result]);
@@ -143,3 +153,5 @@ improper_lists_test_() ->
     ].
 
 -endif.
+
+test()-> jsx:encode([{a,<<"你好">>}]).

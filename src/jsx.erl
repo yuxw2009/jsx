@@ -77,10 +77,12 @@ encode(Source, Config) -> jsx_to_json:to_json(Source, Config).
 
 -spec decode(Source::json_text()) -> json_term().
 
+decode(List) when is_list(List)-> decode(list_to_binary(List));
 decode(Source) -> decode(Source, []).
 
 -spec decode(Source::json_text(), Config::jsx_to_term:config()) -> json_term() | {incomplete, decoder()}.
 
+decode(List,Config) when is_list(List)-> decode(list_to_binary(List),Config);
 decode(Source, Config) -> jsx_to_term:to_term(Source, Config).
 
 
