@@ -65,15 +65,33 @@ encode_(Term, EntryPoint) when is_list(Term) ->
 encode_(Else, _EntryPoint) -> [Else].
 
 
-unzip([{K, V}|Rest], EntryPoint) when is_integer(K); is_binary(K); is_atom(K) ->
-    [K] ++ EntryPoint:encode(V, EntryPoint) ++ unzip(Rest, EntryPoint);
-unzip([], _) -> [end_object];
-unzip(_, _) -> erlang:error(badarg).
+% unzip([{K, V}|Rest], EntryPoint) when is_integer(K); is_binary(K); is_atom(K) ->
+%     R=[K] ++ EntryPoint:encode(V, EntryPoint) ++ unzip(Rest, EntryPoint),
+%      %io:format("unzip1:~p~n",[R]),
+%      R;
+% unzip([], _) -> [end_object];
+% unzip(_, _) -> erlang:error(badarg).
+
+unzip([{K, V}|Rest], EntryPoint)->unzip([{K, V}|Rest], EntryPoint,[]).
+unzip(Term=[{K, V}|Rest], EntryPoint,Result) when is_integer(K); is_binary(K); is_atom(K) ->
+    % io:format("unzip:~p ~p ~n",[Term,Result]),
+    unzip(Rest, EntryPoint,[[K] ++ EntryPoint:encode(V, EntryPoint)|Result]);
+unzip([], _,Res) -> 
+    R=lists:concat(lists:reverse([[end_object]|Res])),
+    % io:format("unzip1:~p~n",[{Res,R}]),
+    R;
+unzip(_, _,_) -> erlang:error(badarg).
 
 
-unhitch([V|Rest], EntryPoint) ->
-    EntryPoint:encode(V, EntryPoint) ++ unhitch(Rest, EntryPoint);
-unhitch([], _) -> [end_array].
+% unhitch([V|Rest], EntryPoint) ->
+%     EntryPoint:encode(V, EntryPoint) ++ unhitch(Rest, EntryPoint);
+% unhitch([], _) -> [end_array].
+
+unhitch([V|Rest], EntryPoint) -> unhitch([V|Rest], EntryPoint,[]).
+
+unhitch([V|Rest], EntryPoint,Res) ->
+    unhitch(Rest, EntryPoint,[EntryPoint:encode(V, EntryPoint)|Res]);
+unhitch([], _,Res) -> lists:concat(lists:reverse([[end_array]|Res])).
 
 
 -ifdef(maps_support).
